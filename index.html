@@ -1,2 +1,504 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><title>文手字数台</title></head><body><p>正在准备工具...</p></body></html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4ef">
+  <title>文手字数台</title>
+  <style>
+    :root {
+      --paper: #f5f4ef;
+      --panel: #fffefa;
+      --ink: #20201d;
+      --muted: #77766f;
+      --line: #deddd6;
+      --soft: #efeee8;
+      --accent: #176b5a;
+      --accent-soft: #e3f0eb;
+      --warning: #b35b1e;
+      --warning-soft: #fff1e3;
+      --danger: #a64237;
+      --shadow: 0 18px 45px rgba(42, 42, 34, .08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "Noto Sans SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    }
+
+    .shell {
+      width: min(940px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 42px 0 64px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .kicker {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .12em;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Noto Serif SC", "Songti SC", serif;
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 700;
+      letter-spacing: .01em;
+      line-height: 1.12;
+    }
+
+    .intro {
+      max-width: 420px;
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .paperclip {
+      width: 44px;
+      height: 44px;
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--accent);
+      background: var(--panel);
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      box-shadow: 0 8px 20px rgba(42, 42, 34, .05);
+    }
+
+    .tool {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .tool-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 17px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 254, 250, .82);
+    }
+
+    .tool-label {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+    }
+
+    .limits {
+      display: flex;
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+    }
+
+    .limit {
+      min-width: 68px;
+      padding: 7px 10px;
+      border: 0;
+      border-radius: 5px;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      transition: color .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+
+    .limit:hover { color: var(--ink); }
+    .limit.active {
+      color: var(--accent);
+      background: var(--panel);
+      box-shadow: 0 2px 5px rgba(42, 42, 34, .08);
+    }
+
+    .editor-wrap { padding: 20px; }
+
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 330px;
+      resize: vertical;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      color: var(--ink);
+      background: transparent;
+      font: 18px/1.9 "Noto Serif SC", "Songti SC", serif;
+    }
+
+    textarea::placeholder { color: #b5b3aa; }
+
+    .meter {
+      display: grid;
+      gap: 10px;
+      padding: 0 20px 18px;
+    }
+
+    .meter-line {
+      height: 7px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: var(--soft);
+    }
+
+    .meter-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--accent);
+      transition: width .2s ease, background .2s ease;
+    }
+
+    .meter-fill.warning { background: var(--warning); }
+    .meter-fill.danger { background: var(--danger); }
+
+    .stats {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .count {
+      color: var(--ink);
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: .01em;
+    }
+
+    .count span { color: var(--muted); font-size: 14px; font-weight: 600; }
+
+    .status {
+      min-height: 20px;
+      padding: 0 20px 8px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .status.warning { color: var(--warning); }
+    .status.danger { color: var(--danger); }
+
+    .tool-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--line);
+      background: #faf9f5;
+    }
+
+    .hint { color: var(--muted); font-size: 12px; }
+
+    .actions { display: flex; gap: 8px; }
+
+    .actions .action { white-space: nowrap; }
+
+    .action {
+      padding: 8px 13px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink);
+      background: var(--panel);
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      transition: border-color .2s ease, color .2s ease, background .2s ease;
+    }
+
+    .action:hover { border-color: var(--accent); color: var(--accent); }
+    .action.primary { border-color: var(--accent); color: white; background: var(--accent); }
+    .action.primary:hover { background: #0f5749; }
+
+    .note {
+      margin: 16px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 620px) {
+      .shell { width: min(100% - 22px, 940px); padding-top: 26px; }
+      .topbar { margin-bottom: 20px; }
+      .intro { display: none; }
+      .tool-head { align-items: flex-start; flex-direction: column; }
+      .limits { width: 100%; }
+      .limit { flex: 1; }
+      textarea { min-height: 300px; font-size: 17px; }
+      .tool-foot { align-items: stretch; flex-direction: column; }
+      .actions { justify-content: flex-end; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="kicker">WRITING DESK / 01</p>
+        <h1>文手字数台</h1>
+        <p class="intro">给短文、投稿和社交平台准备的轻量写作空间。选一个目标，专心把句子写完。</p>
+      </div>
+      <div class="paperclip" aria-hidden="true">✎</div>
+    </header>
+
+    <section class="tool" aria-label="中文写作字数限制工具">
+      <div class="tool-head">
+        <p class="tool-label">选择本次字数上限</p>
+        <div class="limits" role="group" aria-label="字数上限">
+          <button class="limit active" type="button" data-limit="150" aria-pressed="true">150 字</button>
+          <button class="limit" type="button" data-limit="300" aria-pressed="false">300 字</button>
+          <button class="limit" type="button" data-limit="500" aria-pressed="false">500 字</button>
+        </div>
+      </div>
+
+      <div class="editor-wrap">
+        <textarea id="editor" aria-label="写作内容" placeholder="从这里开始写……"></textarea>
+      </div>
+
+      <div class="meter" aria-live="polite">
+        <div class="meter-line" aria-hidden="true"><div class="meter-fill" id="meterFill"></div></div>
+        <div class="stats">
+          <div class="count"><span id="count">0</span> <span>/ <span id="limitText">150</span> 字</span></div>
+          <div id="remaining">还可写 150 字</div>
+        </div>
+      </div>
+
+      <div class="status" id="status">准备好了，写下第一句吧。</div>
+
+      <div class="tool-foot">
+        <div class="hint">按非空白字符计数，中文标点也会计入。</div>
+        <div class="actions">
+          <button class="action" id="clearButton" type="button">清空</button>
+          <button class="action primary" id="copyButton" type="button">复制全文</button>
+          <button class="action" id="downloadButton" type="button">下载文本</button>
+          <button class="action" id="imageButton" type="button">保存图片</button>
+        </div>
+      </div>
+    </section>
+
+    <p class="note">草稿会自动保存在当前浏览器中，刷新页面也不会丢失。</p>
+  </main>
+
+  <script>
+    (() => {
+      const editor = document.querySelector('#editor');
+      const countEl = document.querySelector('#count');
+      const limitTextEl = document.querySelector('#limitText');
+      const remainingEl = document.querySelector('#remaining');
+      const statusEl = document.querySelector('#status');
+      const meterFill = document.querySelector('#meterFill');
+      const limitButtons = [...document.querySelectorAll('.limit')];
+      const clearButton = document.querySelector('#clearButton');
+      const copyButton = document.querySelector('#copyButton');
+      const downloadButton = document.querySelector('#downloadButton');
+      const imageButton = document.querySelector('#imageButton');
+      const savedText = localStorage.getItem('wen-shou-desk-text') || '';
+      const savedLimit = Number(localStorage.getItem('wen-shou-desk-limit'));
+      let limit = [150, 300, 500].includes(savedLimit) ? savedLimit : 150;
+
+      editor.value = savedText;
+
+      function countText(text) {
+        return [...text].filter(character => !/\s/u.test(character)).length;
+      }
+
+      function visibleTextAtLimit(text, max) {
+        let result = '';
+        let count = 0;
+        for (const character of text) {
+          if (!/\s/u.test(character)) count += 1;
+          if (count > max) break;
+          result += character;
+        }
+        return result;
+      }
+
+      function render(message) {
+        const count = countText(editor.value);
+        const remaining = limit - count;
+        const percentage = Math.min(count / limit * 100, 100);
+        countEl.textContent = count;
+        limitTextEl.textContent = limit;
+        meterFill.style.width = `${percentage}%`;
+        meterFill.className = 'meter-fill' + (percentage >= 100 ? ' danger' : percentage >= 85 ? ' warning' : '');
+        remainingEl.textContent = remaining >= 0 ? `还可写 ${remaining} 字` : `超出 ${Math.abs(remaining)} 字`;
+        remainingEl.style.color = remaining < 0 ? 'var(--danger)' : '';
+        statusEl.className = 'status' + (percentage >= 100 ? ' danger' : percentage >= 85 ? ' warning' : '');
+        statusEl.textContent = message || (percentage >= 100 ? '已达到上限，继续输入会自动截断。' : percentage >= 85 ? '快到上限了，收束一下这一段。' : '准备好了，写下第一句吧。');
+        limitButtons.forEach(button => {
+          const active = Number(button.dataset.limit) === limit;
+          button.classList.toggle('active', active);
+          button.setAttribute('aria-pressed', String(active));
+        });
+      }
+
+      function save() {
+        localStorage.setItem('wen-shou-desk-text', editor.value);
+        localStorage.setItem('wen-shou-desk-limit', String(limit));
+      }
+
+      function enforceLimit() {
+        const count = countText(editor.value);
+        if (count > limit) {
+          editor.value = visibleTextAtLimit(editor.value, limit);
+          render(`已达到 ${limit} 字上限，多出的内容已截去。`);
+        } else {
+          render();
+        }
+        save();
+      }
+
+      editor.addEventListener('input', enforceLimit);
+      limitButtons.forEach(button => button.addEventListener('click', () => {
+        limit = Number(button.dataset.limit);
+        enforceLimit();
+        editor.focus();
+      }));
+
+      clearButton.addEventListener('click', () => {
+        if (!editor.value) return;
+        editor.value = '';
+        render('已清空，可以开始新的片段。');
+        save();
+        editor.focus();
+      });
+
+      copyButton.addEventListener('click', async () => {
+        if (!editor.value) {
+          render('还没有内容可复制。');
+          editor.focus();
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(editor.value);
+          render('全文已复制到剪贴板。');
+        } catch {
+          editor.select();
+          document.execCommand('copy');
+          editor.setSelectionRange(editor.value.length, editor.value.length);
+          render('全文已复制到剪贴板。');
+        }
+      });
+
+      downloadButton.addEventListener('click', () => {
+        if (!editor.value) {
+          render('还没有内容可下载。');
+          editor.focus();
+          return;
+        }
+        const blob = new Blob([editor.value], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `文案-${limit}字.txt`;
+        link.click();
+        URL.revokeObjectURL(url);
+        render('文案文本已下载。');
+      });
+
+      imageButton.addEventListener('click', () => {
+        if (!editor.value) {
+          render('还没有内容可保存为图片。');
+          editor.focus();
+          return;
+        }
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        const scale = 2;
+        const width = 720;
+        const padding = 58;
+        const contentWidth = width - padding * 2;
+        const lines = [];
+        context.font = '26px "Microsoft YaHei", sans-serif';
+        for (const paragraph of editor.value.split(/\n/u)) {
+          let line = '';
+          for (const character of paragraph || ' ') {
+            const next = line + character;
+            if (context.measureText(next).width > contentWidth && line) {
+              lines.push(line);
+              line = character;
+            } else {
+              line = next;
+            }
+          }
+          lines.push(line || ' ');
+        }
+        const lineHeight = 46;
+        const height = Math.max(520, 280 + lines.length * lineHeight);
+        canvas.width = width * scale;
+        canvas.height = height * scale;
+        context.scale(scale, scale);
+        context.fillStyle = '#f5f4ef';
+        context.fillRect(0, 0, width, height);
+        context.fillStyle = '#fffefa';
+        context.fillRect(26, 26, width - 52, height - 52);
+        context.fillStyle = '#176b5a';
+        context.font = '700 13px "Microsoft YaHei", sans-serif';
+        context.fillText('WRITING DESK / 01', padding, 82);
+        context.fillStyle = '#20201d';
+        context.font = '700 34px "Microsoft YaHei", sans-serif';
+        context.fillText('文手字数台', padding, 132);
+        context.strokeStyle = '#deddd6';
+        context.lineWidth = 1;
+        context.beginPath();
+        context.moveTo(padding, 166);
+        context.lineTo(width - padding, 166);
+        context.stroke();
+        context.fillStyle = '#20201d';
+        context.font = '26px "Microsoft YaHei", sans-serif';
+        lines.forEach((line, index) => context.fillText(line, padding, 220 + index * lineHeight));
+        context.fillStyle = '#77766f';
+        context.font = '700 16px "Microsoft YaHei", sans-serif';
+        context.fillText(`${countText(editor.value)} / ${limit} 字`, padding, height - 76);
+        context.font = '14px "Microsoft YaHei", sans-serif';
+        context.fillText('按非空白字符计数，中文标点也会计入。', padding, height - 48);
+        canvas.toBlob(blob => {
+          if (!blob) return;
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `文案-${limit}字.png`;
+          link.click();
+          URL.revokeObjectURL(url);
+          render('文案图片已保存。');
+        }, 'image/png');
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
